@@ -8890,3 +8890,37 @@ function wp_admin_notice( $message, $args = array() ) {
 
 	echo wp_kses_post( wp_get_admin_notice( $message, $args ) );
 }
+
+
+// Add custom meta box for long description field
+function custom_long_description_meta_box() {
+    add_meta_box(
+        'custom-long-description-meta-box',
+        __('Long Description', 'textdomain'),
+        'render_custom_long_description_meta_box',
+        'post', // Change 'post' to 'page' if you want the field on pages instead
+        'normal',
+        'default'
+    );
+}
+add_action('add_meta_boxes', 'custom_long_description_meta_box');
+
+// Render custom meta box content
+function render_custom_long_description_meta_box($post) {
+    $long_description = get_post_meta($post->ID, 'long_description', true);
+    ?>
+    <label for="long_description"><?php _e('Long Description:', 'textdomain'); ?></label>
+    <textarea id="long_description" name="long_description" rows="5" style="width: 100%;"><?php echo esc_textarea($long_description); ?></textarea>
+    <?php
+}
+
+// Save custom meta box data
+function save_custom_long_description_meta_box($post_id) {
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+        return;
+    }
+    if (isset($_POST['long_description'])) {
+        update_post_meta($post_id, 'long_description', sanitize_textarea_field($_POST['long_description']));
+    }
+}
+add_action('save_post', 'save_custom_long_description_meta_box');
